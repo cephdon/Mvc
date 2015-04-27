@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Assert
             Assert.Equal(@"<input name=""HtmlEncode[[form-field-name]]"" type=""HtmlEncode[[hidden]]"" " +
                 @"value=""HtmlEncode[[serialized-form-token]]"" />",
-                inputElement.ToString(TagRenderMode.SelfClosing));
+                DefaultTemplatesUtilities.HtmlContentToString(inputElement.GetHtmlContent(TagRenderMode.SelfClosing)));
             context.TokenStore.Verify();
         }
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Assert
             Assert.Equal(@"<input name=""HtmlEncode[[form-field-name]]"" type=""HtmlEncode[[hidden]]"" " +
                 @"value=""HtmlEncode[[serialized-form-token]]"" />",
-                inputElement.ToString(TagRenderMode.SelfClosing));
+                DefaultTemplatesUtilities.HtmlContentToString(inputElement.GetHtmlContent(TagRenderMode.SelfClosing)));
             context.TokenStore.Verify();
         }
 
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Assert
             Assert.Equal(@"<input name=""HtmlEncode[[form-field-name]]"" type=""HtmlEncode[[hidden]]"" " +
                 @"value=""HtmlEncode[[serialized-form-token]]"" />",
-                inputElement.ToString(TagRenderMode.SelfClosing));
+                DefaultTemplatesUtilities.HtmlContentToString(inputElement.GetHtmlContent(TagRenderMode.SelfClosing)));
         }
 
         [Theory]

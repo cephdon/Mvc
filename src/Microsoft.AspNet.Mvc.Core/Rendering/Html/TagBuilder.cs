@@ -104,25 +104,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        private void AppendAttributes(TextWriter writer, IHtmlEncoder encoder)
-        {
-            foreach (var attribute in Attributes)
-            {
-                var key = attribute.Key;
-                if (string.Equals(key, "id", StringComparison.OrdinalIgnoreCase) &&
-                    string.IsNullOrEmpty(attribute.Value))
-                {
-                    continue;
-                }
-
-                writer.Write(' ');
-                writer.Write(key);
-                writer.Write("=\"");
-                encoder.HtmlEncode(attribute.Value, writer);
-                writer.Write('"');
-            }
-        }
-
         public void MergeAttribute(string key, string value)
         {
             MergeAttribute(key, value, replaceExisting: false);
@@ -164,11 +145,6 @@ namespace Microsoft.AspNet.Mvc.Rendering
             InnerHtml = StringHtmlContent.FromEncodedText(innerText);
         }
 
-        public HtmlString ToHtmlString(TagRenderMode renderMode)
-        {
-            return new HtmlString(ToString(renderMode));
-        }
-
         public override string ToString()
         {
             return ToString(TagRenderMode.Normal);
@@ -176,9 +152,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public string ToString(TagRenderMode renderMode)
         {
+            return ToString(renderMode, HtmlEncoder.Default);
+        }
+
+        public string ToString(TagRenderMode renderMode, IHtmlEncoder htmlEncoder)
+        {
             using (var stringWriter = new StringWriter())
             {
-                WriteTo(stringWriter, new HtmlEncoder(), renderMode);
+                WriteTo(stringWriter, htmlEncoder, renderMode);
                 return stringWriter.ToString();
             }
         }
@@ -191,38 +172,66 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
         public void WriteTo(TextWriter writer, IHtmlEncoder encoder, TagRenderMode renderMode)
         {
+            GetHtmlContent(renderMode).WriteTo(writer, encoder);
+        }
+
+        public IHtmlContent GetHtmlContent(TagRenderMode renderMode)
+        {
+            var result = new BufferedHtmlContent();
             switch (renderMode)
             {
                 case TagRenderMode.StartTag:
-                    writer.Write('<');
-                    writer.Write(TagName);
-                    AppendAttributes(writer, encoder);
-                    writer.Write('>');
+                    result.Append('<');
+                    result.Append(TagName);
+                    AppendAttributes(result);
+                    result.Append('>');
                     break;
                 case TagRenderMode.EndTag:
-                    writer.Write("</");
-                    writer.Write(TagName);
-                    writer.Write('>');
+                    result.Append("</");
+                    result.Append(TagName);
+                    result.Append('>');
                     break;
                 case TagRenderMode.SelfClosing:
-                    writer.Write('<');
-                    writer.Write(TagName);
-                    AppendAttributes(writer, encoder);
-                    writer.Write(" />");
+                    result.Append('<');
+                    result.Append(TagName);
+                    AppendAttributes(result);
+                    result.Append(" />");
                     break;
                 default:
-                    writer.Write('<');
-                    writer.Write(TagName);
-                    AppendAttributes(writer, encoder);
-                    writer.Write('>');
+                    result.Append('<');
+                    result.Append(TagName);
+                    AppendAttributes(result);
+                    result.Append('>');
                     if (InnerHtml != null)
                     {
-                        InnerHtml.WriteTo(writer, encoder);
+                        result.Append(InnerHtml);
                     }
-                    writer.Write("</");
-                    writer.Write(TagName);
-                    writer.Write('>');
+
+                    result.Append("</");
+                    result.Append(TagName);
+                    result.Append('>');
                     break;
+            }
+
+            return result;
+        }
+
+        private void AppendAttributes(BufferedHtmlContent content)
+        {
+            foreach (var attribute in Attributes)
+            {
+                var key = attribute.Key;
+                if (string.Equals(key, "id", StringComparison.OrdinalIgnoreCase) &&
+                    string.IsNullOrEmpty(attribute.Value))
+                {
+                    continue;
+                }
+
+                content.Append(' ');
+                content.Append(key);
+                content.Append("=\"");
+                content.Append(attribute.Value);
+                content.Append('"');
             }
         }
 

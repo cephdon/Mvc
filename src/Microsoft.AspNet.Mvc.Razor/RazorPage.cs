@@ -416,7 +416,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     }
                 }
 
-                htmlString.WriteTo(writer);
+                htmlString.WriteTo(writer, encoder);
                 return;
             }
 
